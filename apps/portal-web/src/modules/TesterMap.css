@@ -1,0 +1,17 @@
+.tester-map { max-width: 960px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+.tester-map-top, .tester-map-filters { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.tester-map h1 { margin: .2rem 0 .4rem; font-size: 1.75rem; }
+.tester-map h2 { margin: 0; font-size: 1.25rem; }
+.tester-map-filters .btn, .tester-map .btn { min-height: 44px; width: auto; }
+.tester-map-filters .btn[aria-pressed="true"] { background: var(--green-soft); color: var(--green-2); }
+.tester-map-search { flex: 1 1 16rem; min-width: min(100%, 16rem); }
+.tester-map-search input { width: 100%; min-height: 44px; }
+.tester-map-feature > header { display: flex; flex-wrap: wrap; gap: .4rem .55rem; align-items: center; }
+.tester-map-feature h3 { margin: 0; flex: 1 1 12rem; font-size: 1.05rem; }
+.tester-map .badge { font-size: .78rem; }
+.tester-map .tester-map-off { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+.tester-map .tester-map-issue { background: var(--danger-bg); color: var(--danger); }
+.tester-map-meta { color: var(--muted); }
+.tester-map-flags { margin: .4rem 0 0; padding-left: 1.1rem; }
+.tester-map-flags li { margin: .35rem 0; }
+.tester-map summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }

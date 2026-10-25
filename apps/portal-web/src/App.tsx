@@ -17,6 +17,7 @@ import { RequestFeedback } from './RequestFeedback'
 import { MEMBER_ACCESS_EXPIRED_MESSAGE } from './access-fetch'
 import { ApiError } from './api'
 import {EntryResources} from './modules/EntryResources'
+import {TesterMapPage} from './modules/TesterMapPage'
 import {CHAT_ENTRY_EVENT,isChatEntry,type ChatEntry} from './modules/chat-entry'
 import type { OnboardingView } from './modules/Onboarding'
 import type { MemberCardData } from './modules/Membership'
@@ -82,7 +83,8 @@ export function App() {
     window.history.replaceState(null,'',legacyConsole)
   }
   const arToken=/^\/ar\/([A-Za-z0-9_-]{43})\/?$/.exec(window.location.pathname)?.[1]
-  const page = arToken?<PublicArPage client={client} token={arToken}/> : popout&&adminRoute ? <GameConsolePopout client={client}/> : window.location.pathname==='/github/callback' ? <GitHubCallback/>
+  const testerMapRoute=/^\/tester-map\/?$/.test(window.location.pathname)
+  const page = testerMapRoute ? <TesterMapPage/> : arToken?<PublicArPage client={client} token={arToken}/> : popout&&adminRoute ? <GameConsolePopout client={client}/> : window.location.pathname==='/github/callback' ? <GitHubCallback/>
     : adminRoute ? <AdminConsoleShell/> : <MemberApp/>
   return <LanguageProvider><AppInstallProvider><RequestFeedback/><PageLoadBoundary label="自由工坊" resetKey={window.location.pathname}>{page}</PageLoadBoundary></AppInstallProvider></LanguageProvider>
 }
@@ -590,6 +592,7 @@ function LoginView({
       </section></div>
       <p className="login-language-scope field-hint">{t('language.scope')}</p>
       {!visitorFirst&&<div className="login-public-resources"><EntryResources client={client} communitySearchEnabled={!resetToken&&site?.community_search_enabled===true}/></div>}
+      <p className="login-tester-map"><a className="btn btn-ghost btn-small" href="/tester-map">{t('testerMap.open')}</a></p>
       <CommunityLinks/>
     </main>
   )

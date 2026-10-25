@@ -43,4 +43,5 @@ export const AI_SISTER_PAGE_SUPPORT={
   onboarding:{status:'disabled',reason:'尚未完成原有會員存取流程'},
   admin:{status:'disabled',reason:'管理員流程使用原有安全說明'},
   skillbooks:{status:'disabled',reason:'技能書彈窗沿用原有介紹與焦點流程'},
+  'tester-map':{status:'disabled',reason:'測試員地圖使用頁面內說明，角色導覽尚未審核'},
 } as const satisfies Record<GuidePageId,PageGuideSupport>;

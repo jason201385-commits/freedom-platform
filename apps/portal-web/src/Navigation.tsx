@@ -17,6 +17,7 @@ const groups: { label: string; pages: TabId[] }[] = [
   { label: '供貨與銷售', pages: ['reservations', 'stores', 'supplier', 'retail', 'marketing'] },
   { label: '管理', pages: ['guild-workspace', 'business'] },
 ];
+export const workspaceNav = { primary, groups };
 
 export function Navigation({ current, onSelect, canManageGuild, guildLaunchpadEnabled, communitySearchEnabled, personalContentEnabled, mobileOpen, currentHash = `#${current}` }: {
   current: TabId; onSelect: (id: TabId, hash?: string) => void; currentHash?: string; canManageGuild: boolean; guildLaunchpadEnabled: boolean; communitySearchEnabled: boolean; personalContentEnabled: boolean; mobileOpen: boolean;
@@ -61,7 +62,7 @@ export function Navigation({ current, onSelect, canManageGuild, guildLaunchpadEn
         {group.label === '管理' && <a className="nav-item" href="/admin">{t('nav.admin')} <span aria-hidden="true">↗</span></a>}
       </div>
     </details>)}
-    <div className="nav-footer">{item('community')}</div>
+    <div className="nav-footer">{item('community')}<a className="nav-item" href="/tester-map">{t('nav.testerMap')}</a></div>
     </>}
       </div>
     </details>

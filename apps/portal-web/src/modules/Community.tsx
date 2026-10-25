@@ -84,6 +84,7 @@ export function RepositoryLibrary({ client, ids, excludeIds, access, title = '�
 }
 
 export function CommunityPanel({ client, onNavigate }: { client: PortalClient; onNavigate: (id: TabId) => void }) {
+  const {t}=useLanguage();
   const [data, setData] = useState<CommunityCatalog | null>(null), [error, setError] = useState(''), [reload, setReload] = useState(0);
   useEffect(() => {
     let active = true;
@@ -97,6 +98,11 @@ export function CommunityPanel({ client, onNavigate }: { client: PortalClient; o
       <BrandPoster compact/>
     </header>
     <CommunityLinks/>
+    <section className="card stack" aria-labelledby="tester-map-entry">
+      <h3 id="tester-map-entry">{t('nav.testerMap')}</h3>
+      <p>{t('testerMap.communityHint')}</p>
+      <a className="btn btn-ghost btn-small" href="/tester-map">{t('testerMap.open')}</a>
+    </section>
     <section className="card stack community-project" aria-labelledby="community-erp-demo-title">
       <h3 id="community-erp-demo-title">ERP／CRM 產業範本試用</h3>
       <p>mars-tw 的 MIT 個人開源專案，提供零售、批發、服務、餐飲、製造、電商、專案及一般企業八種範本。每位訪客建立自己的模擬工作區，只使用測試幣與虛構商品。</p>
