@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { developmentPages } from '../../modules/development/pages.js';
 import { interfaceMessages } from '../../apps/portal-web/src/interface-messages.js';
 import {
-  COVERAGE_STATUSES, TESTER_AREAS, TESTER_COVERAGE, TESTER_FLAGS, TESTER_GROUP_IDS, TESTER_GUILD, TESTER_NON_FEATURE_SITE_FIELDS,
+  COMMERCE_GUIDE_TEXT, COMMERCE_QUEST_STAGES, COVERAGE_STATUSES, TESTER_AREAS, TESTER_COVERAGE, TESTER_FLAGS, TESTER_GROUP_IDS, TESTER_GUILD, TESTER_NON_FEATURE_SITE_FIELDS,
   areasForGroup, coverageSummary, isDefaultOff, validateTesterMap, type TesterArea,
   FEATURE_SEARCH_EXAMPLES, QUEST_PATHS, QUEST_STAGES, QUEST_STEP_IDS, TESTER_PROGRESS_KEY, normalizeProgress, readTesterProgress, resetTesterProgress,
   stageProgress, testerMedals, toggleStep, writeTesterProgress, type TesterProgress,
@@ -115,14 +115,14 @@ test('tester-map quest: every stage has steps and every step maps to inventory f
   for (const feature of features) if (!isDefaultOff(feature)) assert.ok(covered.has(feature.id), `testable feature without a quest step: ${feature.id}`);
 });
 
-test('tester-map quest: every group has a suggested path of real stages and every stage is suggested to someone', () => {
+test('tester-map quest: every group has a suggested path of real stages and every stage has a group or role route', () => {
   const stageIds = QUEST_STAGES.map(stage => stage.id);
   for (const group of TESTER_GROUP_IDS) {
     assert.ok(QUEST_PATHS[group].length > 0, group);
     assert.equal(new Set(QUEST_PATHS[group]).size, QUEST_PATHS[group].length, group);
     for (const id of QUEST_PATHS[group]) assert.ok(stageIds.includes(id), `${group}:${id}`);
   }
-  for (const id of stageIds) assert.ok(TESTER_GROUP_IDS.some(group => QUEST_PATHS[group].includes(id)), id);
+  for (const id of stageIds) assert.ok(TESTER_GROUP_IDS.some(group => QUEST_PATHS[group].includes(id)) || COMMERCE_QUEST_STAGES.some(stage => stage.id === id), id);
   assert.deepEqual(QUEST_PATHS.E, ['builder', 'market']);
 });
 
@@ -249,4 +249,45 @@ test('tester-map quest: store steps never ask for photo uploads while hosted_sto
   const market = QUEST_STAGES.find(stage => stage.id === 'market')!;
   for (const step of market.steps) for (let index = 0; index < 5; index++)
     for (const text of [step.task[index], step.check[index]]) assert.doesNotMatch(text, asksForUpload[index], `${step.id}[${index}]`);
+});
+
+
+test('tester-map commerce: two distinct role routes reuse known steps, safe entry links and all five translations', () => {
+  assert.deepEqual(COMMERCE_QUEST_STAGES.map(stage => stage.id), ['supplier', 'seller']);
+  for (const stage of COMMERCE_QUEST_STAGES) {
+    assert.ok(QUEST_STAGES.includes(stage));
+    assert.ok(stage.steps.length >= 5);
+    for (const text of [stage.name, stage.medal, ...stage.steps.flatMap(step => [step.title, step.task, step.check])]) {
+      assert.equal(text.length, 5); for (const value of text) assert.ok(value.trim());
+    }
+    for (const step of stage.steps) {
+      assert.ok(step.id.startsWith(`${stage.id}.`));
+      assert.equal(step.href, stage.id === 'supplier' ? '#stores/supply' : '#stores');
+      assert.ok(step.features.every(id => ['shop.supplier', 'shop.retail', 'shop.supplier-console', 'shop.stores', 'shop.reservations'].includes(id)));
+    }
+  }
+  for (const text of Object.values(COMMERCE_GUIDE_TEXT)) { assert.equal(text.length, 5); for (const value of text) assert.ok(value.trim()); }
+  assert.match(COMMERCE_GUIDE_TEXT.safety[0], /正式站只瀏覽/);
+  assert.match(COMMERCE_GUIDE_TEXT.safety[0], /不接受合作條款/);
+  assert.match(COMMERCE_GUIDE_TEXT.blocked[0], /不要勾完成/);
+  assert.match(COMMERCE_GUIDE_TEXT.report[0], /先搜尋既有 Issue/);
+  assert.match(COMMERCE_QUEST_STAGES[1].steps.find(step => step.id === 'seller.orders')!.task[0], /不要用「我的訂單」取代店主管理/);
+});
+
+test('tester-map commerce: existing progress survives and the two roles remain independent', () => {
+  const storage = memoryStorage({[TESTER_PROGRESS_KEY]: JSON.stringify({v: 1, group: 'E', done: ['market.offer', 'arrival.preview']})});
+  const before = readTesterProgress(storage);
+  let next = before;
+  for (const step of COMMERCE_QUEST_STAGES[0].steps) next = toggleStep(next, step.id);
+  writeTesterProgress(next, storage);
+  const restored = readTesterProgress(storage);
+  assert.ok(before.done.every(id => restored.done.includes(id)));
+  assert.equal(stageProgress(COMMERCE_QUEST_STAGES[0], restored).complete, true);
+  assert.equal(stageProgress(COMMERCE_QUEST_STAGES[1], restored).done, 0);
+  assert.equal(earned(restored).includes('stage:supplier'), true);
+  assert.equal(earned(restored).includes('stage:seller'), false);
+  assert.equal(stageProgress(COMMERCE_QUEST_STAGES[0], toggleStep(restored, 'supplier.product')).complete, false);
+  const oldEPath = {group: 'E' as const, done: QUEST_STAGES.filter(stage => QUEST_PATHS.E.includes(stage.id)).flatMap(stage => stage.steps.map(step => step.id))};
+  assert.equal(earned(oldEPath).includes('path'), true);
+  assert.equal(earned(oldEPath).includes('stage:supplier'), false);
 });

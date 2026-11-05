@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {
-  ISSUES_URL, REDESIGN_BATCH_PR, TEST_WEEK, TESTER_AREAS, TESTER_COVERAGE_UPDATED_AT, TESTER_FLAGS_OBSERVED_AT,
+  COMMERCE_GUIDE_TEXT, COMMERCE_QUEST_STAGES, ISSUES_URL, REDESIGN_BATCH_PR, TEST_WEEK, TESTER_AREAS, TESTER_COVERAGE_UPDATED_AT, TESTER_FLAGS_OBSERVED_AT,
   TESTER_GROUP_IDS, TESTER_GROUPS, TESTER_GUILD, COVERAGE_STATUSES, QUEST_PATHS, QUEST_STAGES, TESTER_PROGRESS_KEY,
   areasForGroup, coverageOf, coverageSummary, isDefaultOff, overallProgress, readTesterProgress, resetTesterProgress,
   stageProgress, testerMedals, toggleStep, writeTesterProgress,
@@ -47,7 +47,8 @@ function QuestStepItem({step, done, pick, onToggle}: {step: QuestStep; done: boo
   const href = stepHref(step), redesign = stepRedesign(step), titleId = `tester-step-${step.id.replace('.', '-')}`;
   return <li className={`tester-quest-step${done ? ' is-done' : ''}`} data-step-id={step.id} aria-labelledby={titleId}>
     <div className="tester-quest-step-head">
-      <h4 id={titleId}>{pick(step.title)}</h4>
+      <h4 id={titleId} tabIndex={-1}>{pick(step.title)}</h4>
+      {COMMERCE_QUEST_STAGES.some(stage => stage.steps.includes(step)) && <span className="field-hint">{step.id}</span>}
       {done && <span className="pill pill-green">{t('testerMap.stepDone')}</span>}
       {redesign.length > 0 && <span className="pill">{t('testerMap.priority')} · {redesign.map(pr => `#${pr}`).join(' ')}</span>}
     </div>
@@ -72,6 +73,7 @@ function QuestStageCard({stage, progress, pick, open, onOpen, onToggle}: {stage:
       <span className="tester-quest-stage-count">{count.complete ? t('testerMap.stageComplete') : t('testerMap.stageCount', {done: count.done, total: count.total})}</span>
       <progress max={count.total} value={count.done} aria-label={`${pick(stage.name)} ${t('testerMap.stageCount', {done: count.done, total: count.total})}`}/>
     </summary>
+    {COMMERCE_QUEST_STAGES.includes(stage) && <p className="banner banner-info">{pick(COMMERCE_GUIDE_TEXT.safety)} {pick(COMMERCE_GUIDE_TEXT.blocked)}</p>}
     <ol className="tester-quest-steps">{stage.steps.map(step => <QuestStepItem key={step.id} step={step} done={progress.done.includes(step.id)} pick={pick} onToggle={() => onToggle(step)}/>)}</ol>
   </details>;
 }
@@ -133,6 +135,26 @@ export function TesterMap() {
       <p className="eyebrow" id="tester-map-intro">{t('testerMap.eyebrow')}</p>
       <p>{t('testerMap.intro', {start: TEST_WEEK.start, end: TEST_WEEK.end, leader: TESTER_GUILD.leaderNickname})}</p>
       <p className="field-hint">{t('testerMap.redesign', {pr: REDESIGN_BATCH_PR})}</p>
+    </section>
+
+    <section className="stack" aria-labelledby="tester-commerce-title">
+      <h2 id="tester-commerce-title">{pick(COMMERCE_GUIDE_TEXT.title)}</h2>
+      <p className="banner banner-info">{pick(COMMERCE_GUIDE_TEXT.safety)}</p>
+      <p className="field-hint">{pick(COMMERCE_GUIDE_TEXT.blocked)}</p>
+      <div className="tester-map-howto">{COMMERCE_QUEST_STAGES.map(stage => <section className="card stack" key={stage.id} aria-labelledby={`tester-route-${stage.id}`}>
+        <h3 id={`tester-route-${stage.id}`}>{pick(stage.name)}</h3>
+        <ol className="tester-map-steps">{stage.steps.map(step => <li key={step.id}>{pick(step.title).replace(/^\d+\. /, '')}</li>)}</ol>
+        <p className="field-hint">{t('testerMap.stageCount', {done: stageProgress(stage, progress).done, total: stage.steps.length})}</p>
+        <div className="actions"><button type="button" className="btn btn-ghost btn-small" onClick={() => {
+          setOpenStages(value => new Set([...value, stage.id]));
+          requestAnimationFrame(() => {
+            const first = stage.steps.find(step => !progress.done.includes(step.id)) ?? stage.steps[0];
+            const element = document.getElementById(`tester-step-${first.id.replace('.', '-')}`);
+            element?.scrollIntoView({block: 'start'}); element?.focus({preventScroll: true});
+          });
+        }}>{t('testerMap.open')} · {pick(stage.name)}</button></div>
+      </section>)}</div>
+      <p className="field-hint">{pick(COMMERCE_GUIDE_TEXT.report)}</p>
     </section>
 
     <section className="stack tester-quest" aria-labelledby="tester-quest-title">

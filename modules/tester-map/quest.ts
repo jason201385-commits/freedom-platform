@@ -2,6 +2,7 @@
 // inventory features it exercises; default-off features stay in the inventory only.
 // Text order matches the interface catalog: zh-Hant, en, ja, ko, es.
 import type { Localized, TesterGroupId } from './areas.js';
+import {COMMERCE_QUEST_STAGES} from './commerce.js';
 
 export type QuestStep = {
   id: string;
@@ -254,6 +255,7 @@ export const QUEST_STAGES: readonly QuestStage[] = [
         check: ['沒有權限時看不到管理功能或被明確拒絕，也看不到別人的資料。', 'Without permission you see no admin tools or get a clear refusal, and no one else’s data.', '権限がないと管理機能が見えないか明確に拒否され、他人のデータも見えません。', '권한이 없으면 관리 기능이 보이지 않거나 분명히 거부되고 다른 사람의 데이터도 보이지 않습니다.', 'Sin permiso no ves herramientas o recibes un rechazo claro, y ningún dato ajeno.'] },
     ],
   },
+  ...COMMERCE_QUEST_STAGES,
 ];
 
 /** Words the explore.features step tells testers to type; each must find its page in that language. */

@@ -14,3 +14,5 @@ export {
   resetTesterProgress, stageProgress, testerMedals, toggleStep, writeTesterProgress,
 } from './progress.js';
 export type { MedalId, TesterProgress } from './progress.js';
+
+export {COMMERCE_GUIDE_TEXT, COMMERCE_QUEST_STAGES} from './commerce.js';

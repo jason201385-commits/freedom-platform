@@ -147,3 +147,35 @@ test('TESTER-005 the feature-search words in the quest find their pages in all f
     }
   }
 });
+
+test('TESTER-006 supplier and seller routes open the next unfinished step without changing the group or crossing progress',async({page})=>{
+  await page.goto('/#tester-map');
+  const routes=page.getByRole('region',{name:'供貨與銷售測試路線',exact:true});
+  await expect(routes).toContainText('正式站只瀏覽');
+  await expect(routes).toContainText('未開放／受阻');
+  await expect(routes).toContainText('先搜尋既有 Issue');
+  const supplier=page.locator('[data-stage-id="supplier"]'),seller=page.locator('[data-stage-id="seller"]');
+  const openSupplier=routes.getByRole('button',{name:'開啟 · 供應商測試地圖',exact:true});
+  const openSeller=routes.getByRole('button',{name:'開啟 · 銷售者測試地圖',exact:true});
+  await openSupplier.focus();await page.keyboard.press('Enter');
+  await expect(supplier).toHaveJSProperty('open',true);
+  await expect(supplier.getByRole('heading',{name:'1. 找到自己的供貨商品庫',exact:true})).toBeFocused();
+  await expect(supplier).toContainText('不接受合作條款');
+  await expect(supplier.locator('[data-step-id="supplier.entry"] a')).toHaveAttribute('href','#stores/supply');
+  await supplier.locator('[data-step-id="supplier.entry"]').getByRole('button',{name:'完成這一步',exact:true}).click();
+  await expect(routes.getByRole('region',{name:'供應商測試地圖',exact:true})).toContainText('1／5 步');
+  await openSeller.click();
+  await expect(seller.getByRole('heading',{name:'1. 找到自己的測試商店',exact:true})).toBeFocused();
+  await expect(seller.locator('[data-step-id="seller.entry"] a')).toHaveAttribute('href','#stores');
+  await expect(routes.getByRole('region',{name:'銷售者測試地圖',exact:true})).toContainText('0／6 步');
+  await openSupplier.click();
+  await expect(supplier.getByRole('heading',{name:'2. 商品草稿與欄位驗證',exact:true})).toBeFocused();
+  await expect(page).toHaveURL(/#tester-map$/);
+  await page.reload();await openSupplier.click();
+  await expect(supplier.getByRole('heading',{name:'2. 商品草稿與欄位驗證',exact:true})).toBeFocused();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('freedom-tester-map-progress-v1')!).group)).toBeNull();
+  await supplier.locator('summary').click();await openSupplier.click();
+  await expect(supplier).toHaveJSProperty('open',true);
+  await page.setViewportSize({width:390,height:844});
+  expect(await noHorizontalOverflow(page)).toBe(true);
+});
